@@ -1,4 +1,5 @@
 #!/bin/bash
+DIR="$( cd "$( dirname "$0" )" && pwd )"
 health=200
 leave=false
 location=start
@@ -52,7 +53,7 @@ battle () {
     until [[ $ehealth -le 0 || $health -le 0 ]]
     do
         echo What will you do?
-        cat "monsters/$pick.jpc"
+        cat "$DIR/monsters/$pick.jpc"
         printf ">> "
         read choice
         case $choice in
@@ -63,7 +64,7 @@ battle () {
             3) echo "Real men don't run from a fight!" ;;
             *) echo "Please pick (1) (2) (3)" ;;
         esac
-        echo "Team Rocket used $(head -n 1 monsters/$emonster.jpc)!"
+        echo "Team Rocket used $(head -n 1 $DIR/monsters/$emonster.jpc)!"
         echo "Ouch! You lost 20 health"
         ((health-=20))
     echo $health
@@ -74,6 +75,7 @@ battle () {
     done
 }
 
+#Main game loop
 while [[ $health -gt 0 && $leave != true ]]
 do
     printf ">> "
@@ -89,7 +91,17 @@ do
         #move to different location
         then echo "$location"
     fi
-    battle labyrinth/ground/rocket1.jpc
+
+    cd labyrinth/ground
+    if [ -e "rocket1.jpc" ]
+        then battle rocket1.jpc
+    elif [ -e "rocket2.jpc" ]
+        then battle rocket2.jpc
+    elif [ -e "rocket3.jpc" ]
+        then battle rocket3.jpc
+    elif [ -e "boss.jpc" ]
+        then battle boss.jpc
+    fi
 done
 
 
