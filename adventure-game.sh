@@ -51,10 +51,12 @@ begin () {
 prompt () {
     printf 'You are here: %s\n' "${PWD##*/}"
     echo Where do you want to go?
-    for i in $(ls -d */)
-    do
-        echo $i 
-    done
+    if [[ "$(ls -d $PWD)" ]] 
+        then for i in $(ls -d */)
+        do
+            echo $i 
+        done
+    fi
     parent=$(dirname $PWD)
     if [[ $(basename ${PWD##*/}) != "ground" ]]
         # dont show parent directory as option if on ground floor
@@ -127,9 +129,10 @@ battle () {
     sleep 1
     if [[ $ehealth -le 0 ]]
         then echo You defeated Team Rocket!
+        sleep 1
     fi
     done
-    if [[ "$1" = "boss.jpc" ]]
+    if [[ "$1" = "boss.jpc" && $ehealth -le 0 ]]
         then win
     fi
 }
@@ -165,7 +168,6 @@ move () {
 #Main game loop
 while [[ $health -gt 0 && $leave != true ]]
 do
-    win
     printf ">> "
     read cmd location
     if [[ "$cmd" = "exit" ]]
@@ -181,6 +183,22 @@ do
         then move $location
     else
         echo "Sorry, command not recognized. To move to a different room, type: go-to [room]"
+    fi
+    if [[ -e "default.jpc" ]]
+        then cat "default.jpc"
+        sleep 1
+    fi
+    if [[ -e "stimpack.jpc" ]]
+        then ((health+=50))
+    fi
+    if [[ -e "antidote.jpc" ]]
+        then echo "Obtained an antidote!"
+            item[0]=1
+        sleep 1
+    fi
+    if [[ ${item[0]} -eq 1 && "$poisoned" = "true" ]]
+        then poisoned=false
+        echo "You cure your $pick of poison by feeding him the antidote!"
     fi
     if [ $started -eq 1 ]
         then prompt
