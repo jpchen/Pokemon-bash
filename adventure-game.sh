@@ -36,8 +36,23 @@ begin () {
             echo You picked Squirtle! ;;
         3) pick=bulbasaur
             echo You picked Bulbasaur! ;;
-        *) echo "Please pick (1) (2) (3)" ;;
+        *) echo "Please pick (1) (2) (3)" 
+            begin ;;
     esac
+}
+
+prompt () {
+    printf 'You are here: %s\n' "${PWD##*/}"
+    echo Where do you want to go?
+    for i in $(ls -d */)
+    do
+        echo $i 
+    done
+    parent=$(dirname $PWD)
+    if [[ $(basename ${PWD##*/}) != "ground" ]]
+        # dont show parent directory as option if on ground floor
+        then echo $(basename $parent) #go back from whence you came
+    fi
 }
 
 battle () {
@@ -84,9 +99,12 @@ battle () {
 }
 
 move () {
-    if [[ $(cd $1) -ne 0 ]]
-        then echo "You are now $1"
-    else echo "Location not recognized. Please enter a valid location."
+    if [[ $(cd $1) -eq 0 && -d $1 ]]
+        then cd $1
+            echo "You are now $1"
+    else
+        echo "Location not recognized. Please enter a valid location."
+        return
     fi
     if [[ "$poisoned" = true ]]
         then
@@ -94,13 +112,13 @@ move () {
             echo "$pick is poisoned! Your health is now $health"
             echo "You should probably find an antidote!"
     fi
-    if [ -e "rocket1.jpc" ]
+    if [[ -f "rocket1.jpc"="true" ]]
         then battle rocket1.jpc
-    elif [ -e "rocket2.jpc" ]
+    elif [[ -e "rocket2.jpc" ]]
         then battle rocket2.jpc
-    elif [ -e "rocket3.jpc" ]
+    elif [[ -e "rocket3.jpc" ]]
         then battle rocket3.jpc
-    elif [ -e "boss.jpc" ]
+    elif [[ -e "boss.jpc" ]]
         then battle boss.jpc
     fi
     echo $1
@@ -115,7 +133,8 @@ do
         #exit the game
         then leave=true
     elif [[ "$cmd" = "start" ]]
-        then begin 
+        then started=1 
+            begin 
     elif [[ "$cmd" = "help" ]]
         then echo "$instr"
     elif [[ "$cmd" = "go-to" ]]
@@ -124,18 +143,9 @@ do
     else
         echo "Sorry, command not recognized. To move to a different room, type: go-to [room]"
     fi
-    printf 'You are here: %s\n' "${PWD##*/}"
-    echo Where do you want to go?
-    for i in $(ls -d */)
-    do
-        echo $i 
-    done
-    parent=$(dirname $PWD)
-    if [[ $(basename ${PWD##*/}) != "ground" ]]
-        # dont show parent directory as option if on ground floor
-        then echo $(basename $parent) #go back from whence you came
+    if [ $started -eq 1 ]
+        then prompt
     fi
-
 done
 
 
